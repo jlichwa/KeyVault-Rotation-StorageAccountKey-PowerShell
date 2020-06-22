@@ -14,12 +14,12 @@ This template creates below components to help demonstrate Azure Storage Account
     <img src="https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.png"/>
 </a>
 
-### Function App:
+### Storage Account Key Rotation Functions:
 
 - App Service Plan
 - Storage Account
 - Function App with access to Key Vault and Azure Storage
-- Functions to rotate storage account key
+- Deploy functions to rotate storage account key
 - Event Subscription
 
 
