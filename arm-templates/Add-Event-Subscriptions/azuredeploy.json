@@ -37,7 +37,7 @@
             "apiVersion": "2018-09-01-preview",
             "name": "[concat(parameters('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(parameters('storageAccountName'))))]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
+               
             ],
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '81a9662b-bebf-436f-a333-f67b29880f12')]",
@@ -50,7 +50,7 @@
             "name": "[concat(parameters('keyVaultName'),'/Microsoft.EventGrid/',variables('eventSubscriptionName'))]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[concat('Microsoft.Web/sites/', parameters('functionAppName'),'/sourcecontrols/web')]"
+                
             ],
             "properties": {
                 "destination": {
