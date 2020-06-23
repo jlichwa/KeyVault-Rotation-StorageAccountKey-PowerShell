@@ -45,6 +45,17 @@
 			"tier": "Standard"
 		},
 		"kind": "Storage"
+	  },
+	  {
+		"type": "Microsoft.Storage/storageAccounts",
+		"apiVersion": "2019-06-01",
+		"name": "[concat(parameters('ResourceNamePrefix'),'storage2')]",
+		"location": "[resourceGroup().location]",
+		"sku": {
+			"name": "Standard_LRS",
+			"tier": "Standard"
+		},
+		"kind": "Storage"
 	  }
 	]
   }
