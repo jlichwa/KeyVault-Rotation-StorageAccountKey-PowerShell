@@ -6,7 +6,7 @@
             "defaultValue": "akvrotationstorage",
             "type": "String"
         },
-        "keyvaultName": {
+        "keyVaultName": {
             "defaultValue": "akvrotation-kv",
             "type": "String"
         },
@@ -34,7 +34,7 @@
     },
     "variables": {
 		"functionStorageAccountName": "[concat(uniquestring(resourceGroup().id), 'azfunctions')]",
-		"eventSubscriptionName": "[concat(parameters('keyvaultName'),'-',parameters('secretName'),'-',parameters('functionAppName'))]"
+		"eventSubscriptionName": "[concat(parameters('keyVaultName'),'-',parameters('secretName'),'-',parameters('functionAppName'))]"
 		
     },
     "resources": [
@@ -144,7 +144,7 @@
         {
             "type": "Microsoft.KeyVault/vaults/accessPolicies",
             "apiVersion": "2018-02-14",
-            "name": "[concat(parameters('keyvaultName'), '/add')]",
+            "name": "[concat(parameters('keyVaultName'), '/add')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
             ],
@@ -181,7 +181,7 @@
 		{
             "type": "Microsoft.KeyVault/vaults/providers/eventSubscriptions",
             "apiVersion": "2020-01-01-preview",
-            "name": "[concat(parameters('keyvaultName'),'/Microsoft.EventGrid/',variables('eventSubscriptionName'))]",
+            "name": "[concat(parameters('keyVaultName'),'/Microsoft.EventGrid/',variables('eventSubscriptionName'))]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
