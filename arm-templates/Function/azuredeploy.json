@@ -184,7 +184,7 @@
             "name": "[concat(parameters('keyVaultName'),'/Microsoft.EventGrid/',variables('eventSubscriptionName'))]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
+                "[resourceId('Microsoft.Web/sites/sourcecontrols', concat(parameters('functionAppName'),'/web'))]"
             ],
             "properties": {
                 "destination": {
