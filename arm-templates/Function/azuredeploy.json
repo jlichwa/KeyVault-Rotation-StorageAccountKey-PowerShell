@@ -2,22 +2,22 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "storage_account_name": {
+        "storageAccountName": {
             "defaultValue": "akvrotationstorage",
             "type": "String"
         },
-        "keyvault_name": {
+        "keyvaultName": {
             "defaultValue": "akvrotation-kv",
             "type": "String"
         },
-        "function_app_name": {
+        "functionAppName": {
             "defaultValue": "akvrotation-fnapp",
             "type": "String",
             "metadata": {
                 "description": "The name of the function app that you wish to create."
             }
 		},
-		"secret_name": {
+		"secretName": {
             "defaultValue": "storageKey",
             "type": "String",
             "metadata": {
@@ -33,15 +33,15 @@
         }
     },
     "variables": {
-		"storageAccountName": "[concat(uniquestring(resourceGroup().id), 'azfunctions')]",
-		"eventSubscriptionName": "[concat(parameters('keyvault_name'),'-',parameters('secret_name'),'-',parameters('function_app_name'))]"
+		"functionStorageAccountName": "[concat(uniquestring(resourceGroup().id), 'azfunctions')]",
+		"eventSubscriptionName": "[concat(parameters('keyvaultName'),'-',parameters('secretName'),'-',parameters('functionAppName'))]"
 		
     },
     "resources": [
         {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
-            "name": "[variables('storageAccountName')]",
+            "name": "[variables('functionStorageAccountName')]",
             "location": "[resourceGroup().location]",
             "sku": {
                 "name": "Standard_LRS",
@@ -52,25 +52,25 @@
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2018-02-01",
-            "name": "[parameters('function_app_name')]",
+            "name": "[parameters('functionAppName')]",
             "location": "[resourceGroup().location]",
             "sku": {
                 "name": "Y1",
                 "tier": "Dynamic"
             },
             "properties": {
-                "name": "[parameters('function_app_name')]",
+                "name": "[parameters('functionAppName')]",
                 "computeMode": "Dynamic"
             }
         },
         {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2018-11-01",
-            "name": "[parameters('function_app_name')]",
+            "name": "[parameters('functionAppName')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', parameters('function_app_name'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+                "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('functionStorageAccountName'))]"
             ],
             "kind": "functionapp",
             "identity": {
@@ -78,12 +78,12 @@
             },
             "properties": {
                 "enabled": true,
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('function_app_name'))]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppName'))]",
                 "siteConfig": {
                     "appSettings": [
                         {
                             "name": "AzureWebJobsStorage",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('functionStorageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('functionStorageAccountName')), '2019-06-01').keys[0].value)]"
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
@@ -95,11 +95,11 @@
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('functionStorageAccountName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('functionStorageAccountName')), '2019-06-01').keys[0].value)]"
                         },
                         {
                             "name": "WEBSITE_CONTENTSHARE",
-                            "value": "[toLower(parameters('function_app_name'))]"
+                            "value": "[toLower(parameters('functionAppName'))]"
                         },
                         {
                             "name": "WEBSITE_NODE_DEFAULT_VERSION",
@@ -107,7 +107,7 @@
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                            "value": "[reference(resourceId('microsoft.insights/components', parameters('function_app_name')), '2018-05-01-preview').InstrumentationKey]"
+                            "value": "[reference(resourceId('microsoft.insights/components', parameters('functionAppName')), '2018-05-01-preview').InstrumentationKey]"
                         }
                     ]
                 }
@@ -118,7 +118,7 @@
                     "apiVersion": "2018-11-01",
                     "name": "web",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/Sites', parameters('function_app_name'))]"
+                        "[resourceId('Microsoft.Web/Sites', parameters('functionAppName'))]"
                     ],
                     "properties": {
                         "RepoUrl": "[parameters('repoURL')]",
@@ -131,28 +131,28 @@
         {
             "type": "microsoft.insights/components",
             "apiVersion": "2018-05-01-preview",
-            "name": "[parameters('function_app_name')]",
+            "name": "[parameters('functionAppName')]",
             "location": "[resourceGroup().location]",
             "tags": {
-                "[concat('hidden-link:', resourceId('Microsoft.Web/sites', parameters('function_app_name')))]": "Resource"
+                "[concat('hidden-link:', resourceId('Microsoft.Web/sites', parameters('functionAppName')))]": "Resource"
             },
             "properties": {
-                "ApplicationId": "[parameters('function_app_name')]",
+                "ApplicationId": "[parameters('functionAppName')]",
                 "Request_Source": "IbizaWebAppExtensionCreate"
             }
         },
         {
             "type": "Microsoft.KeyVault/vaults/accessPolicies",
             "apiVersion": "2018-02-14",
-            "name": "[concat(parameters('keyvault_name'), '/add')]",
+            "name": "[concat(parameters('keyvaultName'), '/add')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('function_app_name'))]"
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
             ],
             "properties": {
                 "accessPolicies": [
                     {
                         "tenantId": "[subscription().tenantId]",
-                        "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('function_app_name')),'2019-08-01', 'Full').identity.principalId]",
+                        "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')),'2019-08-01', 'Full').identity.principalId]",
                         "permissions": {
                             "keys": [],
                             "secrets": [
@@ -169,22 +169,22 @@
 		{
             "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
             "apiVersion": "2018-09-01-preview",
-            "name": "[concat(parameters('storage_account_name'), '/Microsoft.Authorization/', guid(uniqueString(parameters('storage_account_name'))))]",
+            "name": "[concat(parameters('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(parameters('storageAccountName'))))]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('function_app_name'))]"
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
             ],
             "properties": {
                 "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '81a9662b-bebf-436f-a333-f67b29880f12')]",
-                "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('function_app_name')),'2019-08-01', 'Full').identity.principalId]"
+                "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')),'2019-08-01', 'Full').identity.principalId]"
             }
 		},
 		{
             "type": "Microsoft.KeyVault/vaults/providers/eventSubscriptions",
             "apiVersion": "2020-01-01-preview",
-            "name": "[concat(parameters('keyvault_name'),'/Microsoft.EventGrid/',variables('eventSubscriptionName'))]",
+            "name": "[concat(parameters('keyvaultName'),'/Microsoft.EventGrid/',variables('eventSubscriptionName'))]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites', parameters('function_app_name'))]"
+                "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
             ],
             "properties": {
                 "destination": {
@@ -192,12 +192,12 @@
                     "properties": {
                         "maxEventsPerBatch": 1,
                         "preferredBatchSizeInKilobytes": 64,
-                        "resourceId": "[concat(resourceId('Microsoft.Web/sites', parameters('function_app_name')),'/functions/AKVStorageRotation')]"
+                        "resourceId": "[concat(resourceId('Microsoft.Web/sites', parameters('functionAppName')),'/functions/AKVStorageRotation')]"
                     }
                 },
                 "filter": {
-					"subjectBeginsWith": "[parameters('secret_name')]",
-      				"subjectEndsWith": "[parameters('secret_name')]",
+					"subjectBeginsWith": "[parameters('secretName')]",
+      				"subjectEndsWith": "[parameters('secretName')]",
 					"includedEventTypes": ["Microsoft.KeyVault.SecretNearExpiry"]
 					
                 }
