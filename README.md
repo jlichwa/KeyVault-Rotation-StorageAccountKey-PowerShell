@@ -6,7 +6,7 @@ Functions regenerate individual key (alternating key1 and key2) in Storage Accou
 
 Functions require following information stored in secret as tags:
 - $secret.Tags["ValidityPeriodDays"] - number of days, it defines expiration date for new secret
-- $secret.Tags["CredentialId"] - key id (key1 or key2)
+- $secret.Tags["CredentialId"] - key id (key1|key2)
 - $secret.Tags["ProviderAddress"] - Storage Account Resource Id
 
 You can create new secret with above tags and Storage access key as value or add those tags to existing secret. For automated rotation expiry date would also be required - it triggers event 30 days before expiry
